@@ -13,6 +13,13 @@ python = "^3.10"
 langchain = "0.0.199"
 openai = "0.27.8"
 chainlit = "0.3.0"
+streamlit-chat = "0.0.2.2"
+selenium = "4.19.0"
+chromadb = "0.4.24"
+matplotlib = "3.7.1"
+pandas = "2.0.3"
+numpy = "1.25.2"
+lark = "1.1.9"
 
 
 [build-system]
