@@ -10,6 +10,32 @@ from selenium.webdriver.support.ui import Select
 import os
 import time
 
+#Necessary import
+
+import numpy as np
+import pandas as pd
+import datetime as dt
+import os
+import matplotlib.pyplot as plt
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain.chains import ConversationalRetrievalChain
+from langchain.document_loaders.csv_loader import CSVLoader
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import PromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate,  ChatPromptTemplate
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import EmbeddingsFilter
+from langchain.retrievers.self_query.base import SelfQueryRetriever
+from langchain.chains.query_constructor.base import AttributeInfo
+from langchain.vectorstores import FAISS, Chroma
+import csv
+from typing import Dict, List, Optional
+from langchain.document_loaders.base import BaseLoader
+from langchain.docstore.document import Document
+from google.colab import userdata
+import lark
+
+
 
 def ingest_data():
     # Initialize Selenium WebDriver
