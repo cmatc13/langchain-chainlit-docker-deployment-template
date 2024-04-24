@@ -10,18 +10,25 @@ packages = [{include = "langchain_chainlit_docker_deployment_template"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-langchain = "0.0.199"
-openai = "0.27.8"
-chainlit = "0.3.0"
+langchain = "0.1.16"
+openai = "1.23.2"
+chainlit = "1.0.504"
 streamlit-chat = "0.0.2.2"
 selenium = "4.19.0"
 chromadb = "0.4.24"
 matplotlib = "3.7.1"
 pandas = "2.0.3"
-numpy = "1.25.2"
+numpy = "1.26.4"
 lark = "1.1.9"
+faiss-cpu = "1.8.0"
+tiktoken = "0.5.2"
+langchain-openai = "0.1.3"
+langchain-community = "0.0.34"
+langchain_experimental = "0.0.57"
+tabulate = "^0.9.0"
+rust = ">=1.0.0"
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0", "setuptools>=49.0.0", "wheel", "maturin>=0.10.0"]
 build-backend = "poetry.core.masonry.api"

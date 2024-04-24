@@ -1,5 +1,9 @@
 # The builder image, used to build the virtual environment
-FROM python:3.11-slim-buster as builder
+FROM python:3.12-bookworm as builder
+
+# Install Rust and Cargo as a non-root user
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && /bin/bash -c "source $HOME/.cargo/env && rustup default stable"
 
 # Environment setup for build
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -15,15 +19,23 @@ RUN apt-get update && apt-get install -y git
 RUN groupadd -g 1001 appgroup && \
     adduser --uid 1001 --gid 1001 --disabled-password --gecos '' appuser
 
-USER 1001
+USER appuser
 
 RUN pip install --user --no-cache-dir --upgrade pip && \
-    pip install --user --no-cache-dir poetry==1.4.2
+    pip install --user --no-cache-dir poetry==1.8.2
 
 WORKDIR /home/appuser/app/
 COPY pyproject.toml poetry.lock /home/appuser/app/
-RUN poetry install --no-cache --no-root && \
+
+# Run poetry lock
+RUN poetry lock
+
+# Install dependencies using the locked versions
+RUN poetry install --no-root --no-interaction --no-ansi && \
     rm -rf $POETRY_CACHE_DIR
+
+# Install specific version of chainlit
+RUN pip install --user --no-cache-dir chainlit==1.0.504
 
 # The runtime image, used to just run the code provided its virtual environment
 FROM python:3.11-slim-buster as runtime
@@ -39,7 +51,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN groupadd -g 1001 appgroup && \
     adduser --uid 1001 --gid 1001 --disabled-password --gecos '' appuser
 
-USER 1001
+USER appuser
 EXPOSE 8000
 WORKDIR /home/appuser/app/
 
@@ -48,7 +60,4 @@ COPY --chown=1001:1001 --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 # Copy application files
 COPY ./chainlit.md /home/appuser/app/chainlit.md
-COPY --chown=1001:1001 ./.chainlit /home/appuser/app/.chainlit
-COPY ./demo_app /home/appuser/app/demo_app
-
-CMD ["chainlit", "run", "/home/appuser/app/demo_app/main.py"]
+COPY --chown=1001:1001 ./.chainlit /home/appuser/app
