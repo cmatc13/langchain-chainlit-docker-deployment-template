@@ -18,7 +18,7 @@ import datetime as dt
 import os
 import matplotlib.pyplot as plt
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain_openai import ChatOpenAI
+#from langchain.openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.memory import ConversationBufferMemory
@@ -32,8 +32,10 @@ import csv
 from typing import Dict, List, Optional
 from langchain.document_loaders.base import BaseLoader
 from langchain.docstore.document import Document
-from google.colab import userdata
 import lark
+from langchain.chains.llm import LLMChain
+from langchain.chat_models import ChatOpenAI
+
 
 
 
@@ -109,13 +111,13 @@ def download_eplex_data(theme_value, file_name):
 
 
         # Specify the download folder
-        download_folder = "/content/downloads"  # Change this to the desired folder path
+        download_folder = "downloads"  # Change this to the desired folder path
 
         # Create the download folder if it doesn't exist
         os.makedirs(download_folder, exist_ok=True)
 
         # Specify the file name
-        file_path = os.path.join("/content", file_name)
+        file_path = os.path.join("/", file_name)
 
         download_button.click()
 
@@ -131,3 +133,24 @@ def download_eplex_data(theme_value, file_name):
     finally:
         # Close the webdriver
         driver.quit()
+
+download_eplex_data("EMPCONTRACT1", "Fixed_Term_Contracts_FTCs.csv")
+
+#Fixed_Term_Contracts_FTCs
+
+# Step 1: Read the CSV file
+file_path = '/downloads/Fixed_Term_Contracts_FTCs.csv'  # Replace 'your_file.csv' with the actual file path
+df = pd.read_csv(file_path)
+
+# Step 2: Merge columns (assuming you want to merge columns 'A' and 'B' into 'C')
+# Using the + operator
+df['Max cumulative duration of successive FTCs'] = df['Maximum cumulative duration of successive FTCs'].astype(str).fillna('') + ' ' + df['Unit'].astype(str).fillna('')
+
+df['Max cumulative duration of successive FTCs'] = df['Max cumulative duration of successive FTCs'].fillna('')
+
+# Step 3: Remove columns 'A' and 'B'
+df.drop(['Maximum cumulative duration of successive FTCs', 'Unit'], axis=1, inplace=True)
+
+# Step 4: Save the DataFrame as a CSV file with the same name as the original file
+df.to_csv(file_path, index=False)  # Set index=False to avoid writing row indices to the CSV file
+
