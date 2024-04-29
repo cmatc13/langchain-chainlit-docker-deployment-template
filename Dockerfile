@@ -1,63 +1,68 @@
 # The builder image, used to build the virtual environment
-FROM python:3.12-bookworm as builder
+FROM python:3.11-slim-buster as builder
 
-# Install Rust and Cargo as a non-root user
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-    && /bin/bash -c "source $HOME/.cargo/env && rustup default stable"
+# Install system dependencies
+RUN apt-get update -y && apt-get install -y git libsqlite3-dev wget xvfb unzip gnupg jq
 
-# Environment setup for build
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PATH="/home/appuser/.local/bin:${PATH}" \
-    POETRY_NO_INTERACTION=1 \
+# Fetch the latest version numbers and URLs for Chrome and ChromeDriver
+RUN wget -qO /tmp/versions.json https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json
+
+RUN CHROME_URL=$(jq -r '.channels.Stable.downloads.chrome[] | select(.platform=="linux64") | .url' /tmp/versions.json) && \
+    wget -q --continue -O /tmp/chrome-linux64.zip $CHROME_URL && \
+    unzip /tmp/chrome-linux64.zip -d /opt/chrome
+
+RUN chmod +x /opt/chrome/chrome-linux64/chrome
+
+RUN CHROMEDRIVER_URL=$(jq -r '.channels.Stable.downloads.chromedriver[] | select(.platform=="linux64") | .url' /tmp/versions.json) && \
+    wget -q --continue -O /tmp/chromedriver-linux64.zip $CHROMEDRIVER_URL && \
+    unzip /tmp/chromedriver-linux64.zip -d /opt/chromedriver && \
+    chmod +x /opt/chromedriver/chromedriver-linux64/chromedriver
+
+# Set up Chromedriver Environment variables
+ENV CHROMEDRIVER_DIR /opt/chromedriver
+ENV PATH $CHROMEDRIVER_DIR:$PATH
+
+# Clean up
+RUN rm /tmp/chrome-linux64.zip /tmp/chromedriver-linux64.zip /tmp/versions.json
+
+# Install Poetry
+RUN pip install poetry==1.8.2
+
+# Set Poetry environment variables
+ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
     POETRY_VIRTUALENVS_CREATE=1 \
     POETRY_CACHE_DIR=/tmp/poetry_cache
 
-RUN apt-get update && apt-get install -y git
+# Expose ports and set working directory
+EXPOSE 8000
+WORKDIR /app
 
-RUN groupadd -g 1001 appgroup && \
-    adduser --uid 1001 --gid 1001 --disabled-password --gecos '' appuser
+# Copy Poetry files and install dependencies
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --no-root --no-dev --no-interaction --no-ansi --no-plugins \
+    && rm -rf $POETRY_CACHE_DIR
 
-USER appuser
+# Copy the demo_app directory, including main.py
+COPY ./demo_app ./demo_app
 
-RUN pip install --user --no-cache-dir --upgrade pip && \
-    pip install --user --no-cache-dir poetry==1.8.2
-
-WORKDIR /home/appuser/app/
-COPY pyproject.toml poetry.lock /home/appuser/app/
-
-# Run poetry lock
-RUN poetry lock
-
-# Install dependencies using the locked versions
-RUN poetry install --no-root --no-interaction --no-ansi && \
-    rm -rf $POETRY_CACHE_DIR
-
-# Install specific version of chainlit
-RUN pip install --user --no-cache-dir chainlit==1.0.504
+# Copy the ChromeDriver binary to /usr/local/bin/
+RUN cp $CHROMEDRIVER_DIR/chromedriver /usr/local/bin/
 
 # The runtime image, used to just run the code provided its virtual environment
 FROM python:3.11-slim-buster as runtime
 
-# Environment setup for runtime
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    VIRTUAL_ENV=/home/appuser/app/.venv \
-    PATH="/home/appuser/app/.venv/bin:/home/appuser/.local/bin:$PATH" \
-    HOST=0.0.0.0 \
-    LISTEN_PORT=8000
+# Set environment variables and copy files from builder stage
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=builder /app/demo_app /app/demo_app
+COPY ./.chainlit ./.chainlit
+COPY chainlit.md ./
+# Copy CHROMEDRIVER_DIR from the builder stage to the runtime stage
+COPY --from=builder /tmp/chromedriver_dir.txt /tmp/chromedriver_dir.txt
 
-RUN groupadd -g 1001 appgroup && \
-    adduser --uid 1001 --gid 1001 --disabled-password --gecos '' appuser
+WORKDIR /app
 
-USER appuser
-EXPOSE 8000
-WORKDIR /home/appuser/app/
-
-# Copy virtual environment from builder
-COPY --chown=1001:1001 --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-
-# Copy application files
-COPY ./chainlit.md /home/appuser/app/chainlit.md
-COPY --chown=1001:1001 ./.chainlit /home/appuser/app
+# Define default command to run the application
+CMD ["bash", "-c", "chainlit run demo_app/main.py"]
