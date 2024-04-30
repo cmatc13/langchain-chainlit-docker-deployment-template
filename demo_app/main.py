@@ -15,6 +15,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.service import Service
+
 import time
 import chainlit as cl
 import tiktoken 
@@ -43,35 +45,31 @@ __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
+from selenium import webdriver
+from chromedriver_py import binary_path
+print("Chromedriver path:", binary_path)
+#print("Chrome Binary Path:", chrome_options.binary_location)
+
 import json
 
 
-def ingest_data():
-    # Initialize Selenium WebDriver
-    driver = webdriver.Chrome()
-
-    # Example: Scrape data from a website
-    driver.get("https://example.com/data")
-
-    # Extract data (replace this with your actual scraping logic)
-    data = driver.find_element_by_css_selector("table").text
-
-    # Close the WebDriver
-    driver.quit()
-
-    # Save data to a file or database (for demonstration, we print it)
-    print("Data ingested:", data)
-    #return data
 
 def download_eplex_data(theme_value, file_name):
-    # Set up Chrome options
-    chrome_options = Options()
-    chrome_options.add_argument('--headless')  # Run Chrome in headless mode
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
 
-    # Set up Chrome webdriver
-    driver = webdriver.Chrome(options=chrome_options)
+
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    
+    # Explicitly set the path to the Chromedriver
+    chromedriver_path = '/opt/chromedriver/chromedriver-linux64/chromedriver'  # Adjusted to your Docker setup
+    service = Service(executable_path=chromedriver_path)
+
+    # Create a new instance of Chrome Driver
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+    #driver = webdriver.Chrome(options=chrome_options)
 
     # URL of the website
     url = "https://eplex.ilo.org/"
@@ -130,7 +128,7 @@ def download_eplex_data(theme_value, file_name):
         driver.quit()
 
 download_eplex_data("EMPCONTRACT1", "Fixed_Term_Contracts_FTCs.csv")
-download_eplex_data("EMPCONTRACT2", "Probationary_Trial_Period.csv")
+""" download_eplex_data("EMPCONTRACT2", "Probationary_Trial_Period.csv")
 download_eplex_data("SOURCESCOPE1", "Legal_Coverage_General.csv")
 download_eplex_data("SOURCESCOPE2", "Legal_Coverage_Reference.csv")
 download_eplex_data("DISMISSREQT1", "Valid_and_prohibited_grounds_for_dismissal.csv")
@@ -140,7 +138,7 @@ download_eplex_data("PROCREQTINDIV2", "Procedures_for_individual_dismissals_noti
 download_eplex_data("PROCREQTCOLLECT", "Procedures_for_collective_dismissals.csv")
 download_eplex_data("SEVERANCEPAY", "Redundancy_and_severance_pay.csv")
 download_eplex_data("REDRESS", "Redress.csv")
-
+ """
 #Fixed_Term_Contracts_FTCs
 
 # Step 1: Read the CSV file
@@ -159,7 +157,7 @@ df.drop(['Maximum cumulative duration of successive FTCs', 'Unit'], axis=1, inpl
 # Step 4: Save the DataFrame as a CSV file with the same name as the original file
 df.to_csv(file_path, index=False)  # Set index=False to avoid writing row indices to the CSV file
 
-
+""" 
 #Probationary_Trial_Period
 
 # Step 1: Read the CSV file
@@ -242,7 +240,7 @@ df.drop(['Number', 'Time unit'], axis=1, inplace=True)
 df.to_csv(file_path, index=False)  # Set index=False to avoid writing row indices to the CSV file
 
 
-
+ """
 class MetaDataCSVLoader(BaseLoader):
     """Loads a CSV file into a list of documents.
 
@@ -318,6 +316,7 @@ class MetaDataCSVLoader(BaseLoader):
 loader1 = MetaDataCSVLoader(file_path="Fixed_Term_Contracts_FTCs.csv",metadata_columns=['Region','Country', 'Year'])
 data1 = loader1.load()
 
+""" 
 # Load data and set embeddings
 loader2 = MetaDataCSVLoader(file_path="Probationary_Trial_Period.csv",metadata_columns=['Region','Country', 'Year'])
 data2 = loader2.load()
@@ -358,7 +357,9 @@ data9 = loader9.load()
 loader10 = MetaDataCSVLoader(file_path="Workers_enjoying_special_protection_against_dismissal.csv",metadata_columns=['Region','Country', 'Year'])
 data10 = loader10.load()
 
-data = data1 + data2 + data3 + data4 + data5 + data6 + data7 + data8 + data9 + data10
+ """
+data = data1 
+#+ data2 + data3 + data4 + data5 + data6 + data7 + data8 + data9 + data10
 
 
 import inspect

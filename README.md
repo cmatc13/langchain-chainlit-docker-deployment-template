@@ -49,9 +49,38 @@ This project includes `Dockerfile` to run the app in Docker container. In order 
 size and building time with cache techniques, I have follow tricks in below Article 
 https://medium.com/@albertazzir/blazing-fast-python-docker-builds-with-poetry-a78a66f5aed0
 
+
+for codespace you may run out of space. try 
+docker system prune
+
+to see space on codespace
+df -h
+
+remove all containers
+docker container prune -f
+
+remove image
+docker rmi <image id>
+
+docker build --force-rm --no-cache -t langchain-chainlit-chat-app:latest .
+
+
 Build the docker container
 
 ``docker  build . -t langchain-chainlit-chat-app:latest``
+
+run the docker image as a container in bash so you can be inside the container and find files
+docker run -it <image id> /bin/bash
+
+
+Build the docker container and view the logs of the build in docker_build.log file (auto created)
+
+docker  build . -t langchain-chainlit-chat-app:latest > docker_build.log 2>&1
+
+and without cache
+docker  build . -t langchain-chainlit-chat-app:latest --no-cache > docker_build.log 2>&1
+
+
 
 To generate Image with `DOCKER_BUILDKIT`, follow below command
 
