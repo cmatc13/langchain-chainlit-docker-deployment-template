@@ -27,7 +27,7 @@ Depending on the type of your chain, you may also need to change the inputs/outp
 1. Clone the repository📂
 
 ```bash
-git clone https://github.com/amjadraza/langchain-chainlit-docker-deployment-template
+git clone https://github.com/cmatc13/langchain-chainlit-docker-deployment-template
 ```
 
 2. Install dependencies with [Poetry](https://python-poetry.org/) and activate virtual environment🔨
