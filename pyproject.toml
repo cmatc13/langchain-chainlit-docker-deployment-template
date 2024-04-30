@@ -27,7 +27,9 @@ langchain-community = "0.0.34"
 langchain_experimental = "0.0.57"
 tabulate = "^0.9.0"
 rust = ">=1.0.0"
-
+pysqlite3-binary = "^0.5.2"
+sqlite4 = "0.1.1"
+chromedriver-py = "124.0.6367.91"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "setuptools>=49.0.0", "wheel", "maturin>=0.10.0"]
