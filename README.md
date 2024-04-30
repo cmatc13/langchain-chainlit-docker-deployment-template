@@ -13,7 +13,7 @@
 - Deployment on Google Cloud App Engine
 - Deployment on Google Cloud using `Cloud Run`
 
-> Reference repository: https://github.com/amjadraza/langchain-streamlit-docker-template
+> Reference repository: https://github.com/cmatc13/langchain-chainlit-docker-deployment-template
 
 This repo contains an `main.py` file which has a template for a chatbot implementation.
 
