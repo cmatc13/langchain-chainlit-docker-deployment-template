@@ -17,3 +17,4 @@ langchain-community == 0.0.34
 langchain_experimental == 0.0.57
 chromedriver-py == 124.0.6367.91
 python-dotenv == 1.0.1
+google-cloud-storage == 2.16.0
