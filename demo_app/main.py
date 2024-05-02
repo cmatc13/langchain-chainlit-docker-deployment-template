@@ -4,10 +4,6 @@ sys.path.append(os.path.abspath('.'))
 
 from chainlit import user_session
 
-#user_env = cl.user_session.get("env")
-#os.environ["OPENAI_API_KEY"] = user_env.get("OPENAI_API_KEY")
-
-
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -47,104 +43,13 @@ import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 from selenium import webdriver
-#from chromedriver_py import binary_path
-#print("Chromedriver path:", binary_path)
-#print("Chrome Binary Path:", chrome_options.binary_location)
 
 import json
 from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-"""
-def download_eplex_data(theme_value, file_name):
 
-
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    #chrome_options.binary_location = '/opt/chrome/chrome-linux64/chrome'
-
-    # Explicitly set the path to the Chromedriver
-    #chromedriver_path = '/opt/chromedriver/chromedriver-linux64/chromedriver'  # Adjusted to your Docker setup
-    #service = Service(executable_path=chromedriver_path)
-
-    # Create a new instance of Chrome Driver
-    #driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    driver = webdriver.Chrome(options=chrome_options)
-
-    # URL of the website
-    url = "https://eplex.ilo.org/"
-
-    # Open the website
-    driver.get(url)
-
-    try:
-        # Click on the 'Download EPLex legal data' button
-        button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/section[3]/div/div/div/div/p[2]/a"))
-        )
-        button.click()
-
-        # Wait for the theme dropdown to be clickable
-        theme_select = WebDriverWait(driver, 4).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div/div[2]/form/div[1]/div/select"))
-        )
-
-        # Click on the theme dropdown to open it
-        theme_select.click()
-
-        # Select the theme
-        theme_option = WebDriverWait(driver, 4).until(
-            EC.visibility_of_element_located((By.XPATH, f"//option[@value='{theme_value}']"))
-        )
-        theme_option.click()
-
-        # Select year
-        year_select = Select(driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div[2]/form/div[2]/div/select"))
-        year_select.select_by_value("latest")  # Change to the desired year
-
-        # Select format
-        format_select = Select(driver.find_element(By.XPATH, "/html/body/div[1]/div/div/div[2]/form/div[3]/div/select"))
-        format_select.select_by_value("csv")  # Change to the desired format
-
-        # Wait for the download button to be clickable
-        download_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/div/div/div[2]/form/div[4]/button[2]"))
-        )
-        
-         # Click the download button   
-        download_button.click()
-
-        # Wait for the file to be downloaded
-        while not os.path.exists(file_name):
-            time.sleep(10)  # Wait for 10 seconds
-
-        # Move the downloaded file to the specified folder
-        #os.rename(file_path, os.path.join(download_folder, file_name))
-
-        #print("Download completed. File saved to:", os.path.join(download_folder, file_name))
-
-    finally:
-        # Close the webdriver
-        driver.quit()
-
-download_eplex_data("EMPCONTRACT1", "Fixed_Term_Contracts_FTCs.csv")
-download_eplex_data("EMPCONTRACT2", "Probationary_Trial_Period.csv")
-download_eplex_data("SOURCESCOPE1", "Legal_Coverage_General.csv")
-download_eplex_data("SOURCESCOPE2", "Legal_Coverage_Reference.csv")
-download_eplex_data("DISMISSREQT1", "Valid_and_prohibited_grounds_for_dismissal.csv")
-download_eplex_data("DISMISSREQT2", "Workers_enjoying_special_protection_against_dismissal.csv")
-download_eplex_data("PROCREQTINDIV1", "Procedures_for_individual_dismissals_general.csv")
-download_eplex_data("PROCREQTINDIV2", "Procedures_for_individual_dismissals_notice_period.csv")
-download_eplex_data("PROCREQTCOLLECT", "Procedures_for_collective_dismissals.csv")
-download_eplex_data("SEVERANCEPAY", "Redundancy_and_severance_pay.csv")
-download_eplex_data("REDRESS", "Redress.csv")
- """
-
-#Fixed_Term_Contracts_FTCs
 
 theme_files = {
     "EMPCONTRACT1": "Fixed_Term_Contracts_FTCs.csv",
@@ -163,7 +68,6 @@ theme_files = {
 
 def download_blob(bucket_name, source_blob_name, destination_file_name):
     """Downloads a blob from the bucket."""
-    #storage_client = storage.Client()
     storage_client = storage.Client.from_service_account_json('rare-daylight-418614-e1907d935d97.json')
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(source_blob_name)
@@ -172,14 +76,12 @@ def download_blob(bucket_name, source_blob_name, destination_file_name):
 
     print(f"Blob {source_blob_name} downloaded to {destination_file_name}.")
 
-# Example usage
-#download_blob("ilo_data_storage", 'path/to/your/file/on/gcs', 'local/path/to/save/file')
-
 # Iterate through the dictionary items
 for theme, filename in theme_files.items():
     download_blob("ilo_data_storage", filename, filename)
 
 
+#Fixed_Term_Contracts_FTCs
 # Step 1: Read the CSV file
 file_path = 'Fixed_Term_Contracts_FTCs.csv'  # Replace 'your_file.csv' with the actual file path
 df = pd.read_csv(file_path)
@@ -196,7 +98,7 @@ df.drop(['Maximum cumulative duration of successive FTCs', 'Unit'], axis=1, inpl
 # Step 4: Save the DataFrame as a CSV file with the same name as the original file
 df.to_csv(file_path, index=False)  # Set index=False to avoid writing row indices to the CSV file
 
-""" 
+
 #Probationary_Trial_Period
 
 # Step 1: Read the CSV file
@@ -279,7 +181,7 @@ df.drop(['Number', 'Time unit'], axis=1, inplace=True)
 df.to_csv(file_path, index=False)  # Set index=False to avoid writing row indices to the CSV file
 
 
- """
+
 class MetaDataCSVLoader(BaseLoader):
     """Loads a CSV file into a list of documents.
 
@@ -355,7 +257,6 @@ class MetaDataCSVLoader(BaseLoader):
 loader1 = MetaDataCSVLoader(file_path="Fixed_Term_Contracts_FTCs.csv",metadata_columns=['Region','Country', 'Year'])
 data1 = loader1.load()
 
-""" 
 # Load data and set embeddings
 loader2 = MetaDataCSVLoader(file_path="Probationary_Trial_Period.csv",metadata_columns=['Region','Country', 'Year'])
 data2 = loader2.load()
@@ -396,9 +297,8 @@ data9 = loader9.load()
 loader10 = MetaDataCSVLoader(file_path="Workers_enjoying_special_protection_against_dismissal.csv",metadata_columns=['Region','Country', 'Year'])
 data10 = loader10.load()
 
- """
-data = data1 
-#+ data2 + data3 + data4 + data5 + data6 + data7 + data8 + data9 + data10
+ 
+data = data1 + data2 + data3 + data4 + data5 + data6 + data7 + data8 + data9 + data10
 
 
 import inspect
@@ -438,7 +338,7 @@ from langchain.prompts import PromptTemplate, SystemMessagePromptTemplate, Human
 
 
 llm= ChatOpenAI( model_name="gpt-4-turbo",temperature=0, api_key=os.getenv("OPENAI_API_KEY"))
-#llm= ChatOpenAI( model_name="gpt-4-turbo",temperature=0)
+
 
 metadata_field_info=[
 AttributeInfo(
