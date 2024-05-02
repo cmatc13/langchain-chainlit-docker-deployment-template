@@ -23,7 +23,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 WORKDIR /app
 
 # Install Python dependencies via Poetry
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml poetry.lock rare-daylight-418614-e1907d935d97.json ./
 RUN poetry install --no-root --no-dev --no-interaction --no-ansi --no-plugins
 
 # Optionally, install requirements.txt if not all packages are managed by Poetry

@@ -41,6 +41,7 @@ from langchain.document_loaders.base import BaseLoader
 from langchain.docstore.document import Document
 import lark
 from langchain.chains.llm import LLMChain
+from google.cloud import storage
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
@@ -55,6 +56,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+"""
 def download_eplex_data(theme_value, file_name):
 
 
@@ -130,7 +132,7 @@ def download_eplex_data(theme_value, file_name):
         driver.quit()
 
 download_eplex_data("EMPCONTRACT1", "Fixed_Term_Contracts_FTCs.csv")
-""" download_eplex_data("EMPCONTRACT2", "Probationary_Trial_Period.csv")
+download_eplex_data("EMPCONTRACT2", "Probationary_Trial_Period.csv")
 download_eplex_data("SOURCESCOPE1", "Legal_Coverage_General.csv")
 download_eplex_data("SOURCESCOPE2", "Legal_Coverage_Reference.csv")
 download_eplex_data("DISMISSREQT1", "Valid_and_prohibited_grounds_for_dismissal.csv")
@@ -141,7 +143,42 @@ download_eplex_data("PROCREQTCOLLECT", "Procedures_for_collective_dismissals.csv
 download_eplex_data("SEVERANCEPAY", "Redundancy_and_severance_pay.csv")
 download_eplex_data("REDRESS", "Redress.csv")
  """
+
 #Fixed_Term_Contracts_FTCs
+
+theme_files = {
+    "EMPCONTRACT1": "Fixed_Term_Contracts_FTCs.csv",
+    "EMPCONTRACT2": "Probationary_Trial_Period.csv",
+    "SOURCESCOPE1": "Legal_Coverage_General.csv",
+    "SOURCESCOPE2": "Legal_Coverage_Reference.csv", 
+    "DISMISSREQT1": "Valid_and_prohibited_grounds_for_dismissal.csv", 
+    "DISMISSREQT2": "Workers_enjoying_special_protection_against_dismissal.csv", 
+    "PROCREQTINDIV1": "Procedures_for_individual_dismissals_general.csv", 
+    "PROCREQTINDIV2": "Procedures_for_individual_dismissals_notice_period.csv",
+    "PROCREQTCOLLECT": "Procedures_for_collective_dismissals.csv",
+    "SEVERANCEPAY": "Redundancy_and_severance_pay.csv",
+    "REDRESS": "Redress.csv"
+}
+
+
+def download_blob(bucket_name, source_blob_name, destination_file_name):
+    """Downloads a blob from the bucket."""
+    #storage_client = storage.Client()
+    storage_client = storage.Client.from_service_account_json('rare-daylight-418614-e1907d935d97.json')
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+
+    blob.download_to_filename(destination_file_name)
+
+    print(f"Blob {source_blob_name} downloaded to {destination_file_name}.")
+
+# Example usage
+#download_blob("ilo_data_storage", 'path/to/your/file/on/gcs', 'local/path/to/save/file')
+
+# Iterate through the dictionary items
+for theme, filename in theme_files.items():
+    download_blob("ilo_data_storage", filename, filename)
+
 
 # Step 1: Read the CSV file
 file_path = 'Fixed_Term_Contracts_FTCs.csv'  # Replace 'your_file.csv' with the actual file path
